@@ -4,6 +4,7 @@ const docRecipeURL = document.querySelector("#recipe-url");
 const docSubmitRecipeURL = document.querySelector("#submit-recipe-url");
 const docReceipeNotif = document.querySelector("#recipe-url-error-notification");
 const docRecipesContainer = document.querySelector("#recipes-container");
+const docClearRecipesBtn = document.querySelector("#clear-recipes-btn");
 
 docSubmitRecipeURL.addEventListener("click", e => {
     submitURL();
@@ -12,6 +13,28 @@ docSubmitRecipeURL.addEventListener("click", e => {
 docRecipeURL.addEventListener("keydown", e => {
     if (e.code === "Enter")
         submitURL();    
+});
+
+docClearRecipesBtn.addEventListener("click", e => {
+    fetch(`${SERVER_ADDR_BASE}/clear-recipes`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+        .then(async response => {
+            const data = await response.json();
+            console.log(data);
+            if (data.error) {
+                activateNotification(docReceipeNotif, data.error);
+                return;
+            }
+            docRecipesContainer.innerHTML = '';
+        })
+        .catch(async error => {
+            const err = await error.json();
+            console.log(err);
+        });
 });
 
 const submitURL = _ => {
@@ -34,11 +57,17 @@ const submitURL = _ => {
     })
         .then(async response => {
             const data = await response.json();
+            console.log(data);
             if (data.error) {
                 activateNotification(docReceipeNotif, data.error);
                 return;
             }
             const recipes = data.recipes;
+            docRecipesContainer.innerHTML = '';
+            let recipesH4 = document.createElement('h4')
+            recipesH4.innerText = 'Recipes';
+            recipesH4.classList.add("subtitle");
+            docRecipesContainer.appendChild(recipesH4);
             for (let recipe of recipes) {
                 recipe_html = `
                     <div class="card mb-4">

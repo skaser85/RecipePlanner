@@ -31,7 +31,6 @@ class Recipe:
 
     def add_ingredient(self, ingredient: Tag) -> Tuple[bool, str]:
         error, name, unit, amount = self.parse_ingredient(ingredient)
-        print(error, name, unit, amount)
         if len(error) > 0:
             return False, error
         self.ingredients.append(Ingredient(name, unit, amount))

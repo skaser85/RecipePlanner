@@ -12,6 +12,11 @@ recipes: list[Recipe] = []
 def index():
     return render_template('index.html', recipes=[r.to_dict() for r in recipes], error='')
 
+@app.route("/clear-recipes", methods=["POST"])
+def clear_recipes():
+    recipes = []
+    return {'error': '', 'recipes': recipes}
+
 @app.route("/recipe-url", methods=["POST"])
 def recipe_url():
     # grab the data passed into this route

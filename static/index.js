@@ -74,6 +74,13 @@ const submitURL = _ => {
                         <header class="card-header">
                         <h3 class="subtitle card-header-title">${ recipe.name }</h3>
                         </header>
+                        <div class="card">
+                            <footer class="card-footer">
+                                <button class="button card-footer-item is-warning recipe-state-button" data-link="${ recipe.url }">Edit</button>
+                                <button class="button card-footer-item is-white recipe-state-button" data-link="${ recipe.url }">Shop</button>
+                                <button class="button card-footer-item is-white recipe-state-button" data-link="${ recipe.url }">Cook</button>
+                            </footer>
+                        </div>
                         <div class="card-content">
                             <div class="content">
                                 <a href="${ recipe.url }" target="_blank">${ recipe.url }</a>
@@ -96,6 +103,22 @@ const submitURL = _ => {
                 let recipe_node = document.createElement('div');
                 recipe_node.innerHTML = recipe_html;
                 docRecipesContainer.appendChild(recipe_node);
+                btns = document.querySelectorAll(`[data-link="${recipe.url}"]`)
+                for (let btn of btns) {
+                    btn.addEventListener("click", e => {
+                        if (btn.classList.contains("is-warning"))
+                            return;
+
+                        for (let b of btns) {
+                            if (b.classList.contains("is-warning")) {
+                                b.classList.remove("is-warning");
+                                b.classList.add("is-white");
+                            }
+                        }
+
+                        btn.classList.add("is-warning");
+                    });
+                }
             }
         })
         .catch(error => console.log(error));

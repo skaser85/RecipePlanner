@@ -14,7 +14,7 @@ def index():
 
 @app.route("/clear-recipes", methods=["POST"])
 def clear_recipes():
-    recipes = []
+    recipes.clear()
     return {'error': '', 'recipes': recipes}
 
 @app.route("/recipe-url", methods=["POST"])
@@ -26,6 +26,10 @@ def recipe_url():
         return {'error': 'URL not found in data!'}
     # pull out the url
     url = data['url']
+    # check if the url already exists
+    exists = len([r for r in recipes if r.url == url]) > 0
+    if exists:
+        return {'error': 'Recipe already exists!', 'recipes': recipes}
     # check to see if we can get the html from the url
     page = requests.get(url)
     if page.status_code != 200:

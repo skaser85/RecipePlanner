@@ -10,7 +10,11 @@ recipes: list[Recipe] = []
 
 @app.route("/")
 def index():
-    return render_template('index.html', recipes=[r.to_dict() for r in recipes], error='')
+    return render_template('index.html')
+
+@app.route("/get-recipes", methods=['GET'])
+def get_recipes():
+    return {'error': '', 'recipes':  [r.to_dict() for r in recipes]}
 
 @app.route("/clear-recipes", methods=["POST"])
 def clear_recipes():
@@ -48,11 +52,6 @@ def recipe_url():
     if len(description) == 0:
         return {'error': 'Unable to parse HTML. Cannot find recipe description.'}
     recipe.description = description[0].text
-    # get recipe author
-    author = soup.find_all('span', class_='wprm-recipe-author')
-    if len(author) == 0:
-        return {'error': 'Unable to parse HTML. Cannot find recipe author'}
-    recipe.author = author[0].text
     error = ''
     # get recipe ingredients
     ingredients = soup.find_all('li', class_='wprm-recipe-ingredient')

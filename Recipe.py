@@ -24,7 +24,6 @@ class Recipe:
     url: str
     name: str = ''
     description: str = ''
-    author: str = ''
     ingredients: List[Ingredient] = field(default_factory=list)
     instructions: List[Instruction] = field(default_factory=list)
     instruction_counter: int = 0

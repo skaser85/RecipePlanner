@@ -5,6 +5,7 @@ const docSubmitRecipeURL = document.querySelector("#submit-recipe-url");
 const docReceipeNotif = document.querySelector("#recipe-url-error-notification");
 const docRecipesContainer = document.querySelector("#recipes-container");
 const docClearRecipesBtn = document.querySelector("#clear-recipes-btn");
+const docShoppingListCntr = document.querySelector("#shopping-list-container");
 
 docSubmitRecipeURL.addEventListener("click", e => {
     submitURL();
@@ -28,6 +29,9 @@ docClearRecipesBtn.addEventListener("click", e => {
             if (data.error) {
                 activateNotification(docReceipeNotif, data.error);
                 return;
+            }
+            if (!docReceipeNotif.classList.contains("is-hidden")) {
+                docReceipeNotif.classList.add("is-hidden");
             }
             docRecipesContainer.innerHTML = '';
         })
@@ -62,66 +66,119 @@ const submitURL = _ => {
                 activateNotification(docReceipeNotif, data.error);
                 return;
             }
-            const recipes = data.recipes;
-            docRecipesContainer.innerHTML = '';
-            let recipesH4 = document.createElement('h4')
-            recipesH4.innerText = 'Recipes';
-            recipesH4.classList.add("subtitle");
-            docRecipesContainer.appendChild(recipesH4);
-            for (let recipe of recipes) {
-                recipe_html = `
-                    <div class="card mb-4">
-                        <header class="card-header">
-                        <h3 class="subtitle card-header-title">${ recipe.name }</h3>
-                        </header>
-                        <div class="card">
-                            <footer class="card-footer">
-                                <button class="button card-footer-item is-warning recipe-state-button" data-link="${ recipe.url }">Edit</button>
-                                <button class="button card-footer-item is-white recipe-state-button" data-link="${ recipe.url }">Shop</button>
-                                <button class="button card-footer-item is-white recipe-state-button" data-link="${ recipe.url }">Cook</button>
-                            </footer>
-                        </div>
-                        <div class="card-content">
-                            <div class="content">
-                                <a href="${ recipe.url }" target="_blank">${ recipe.url }</a>
-                                <p class="recipe-author mt-4"><strong>Author: </strong>${ recipe.author }</p>
-                                <p class="recipe-description mb-2">${ recipe.description }</p>
-                                <hr>
-                                <h4 class="subtitle">Ingredients</h4>
-                                <ul class="recipe-ingredients">
-                                    ${listIngredients(recipe.ingredients)}
-                                </ul>
-                                <hr>
-                                <h4 class="subtitle">Instructions</h4>
-                                <ol class="recipe-instructions">
-                                    ${listInstructions(recipe.instructions)}
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                let recipe_node = document.createElement('div');
-                recipe_node.innerHTML = recipe_html;
-                docRecipesContainer.appendChild(recipe_node);
-                btns = document.querySelectorAll(`[data-link="${recipe.url}"]`)
-                for (let btn of btns) {
-                    btn.addEventListener("click", e => {
-                        if (btn.classList.contains("is-warning"))
-                            return;
-
-                        for (let b of btns) {
-                            if (b.classList.contains("is-warning")) {
-                                b.classList.remove("is-warning");
-                                b.classList.add("is-white");
-                            }
-                        }
-
-                        btn.classList.add("is-warning");
-                    });
-                }
-            }
+            loadRecipes(data.recipes);
         })
         .catch(error => console.log(error));
+}
+
+const loadRecipes = (recipes) => {
+    if (recipes.length === 0)
+        return;
+    docRecipesContainer.innerHTML = '';
+    let recipesH4 = document.createElement('h4')
+    recipesH4.innerText = 'Recipes';
+    recipesH4.classList.add("subtitle");
+    docRecipesContainer.appendChild(recipesH4);
+    for (let recipe of recipes) {
+        recipe_html = `
+            <div class="card mb-4">
+                <header class="card-header">
+                <h3 class="subtitle card-header-title">${ recipe.name }</h3>
+                </header>
+                <div class="card">
+                    <footer class="card-footer">
+                        <button class="button card-footer-item is-warning recipe-state-button" data-link="${ recipe.url }">Edit</button>
+                        <button class="button card-footer-item is-white recipe-state-button" data-link="${ recipe.url }">Shop</button>
+                        <button class="button card-footer-item is-white recipe-state-button" data-link="${ recipe.url }">Cook</button>
+                    </footer>
+                </div>
+                <div class="card-content">
+                    <div class="content">
+                        <a href="${ recipe.url }" target="_blank">${ recipe.url }</a>
+                        <p class="recipe-author mt-4"><strong>Author: </strong>${ recipe.author }</p>
+                        <p class="recipe-description mb-2">${ recipe.description }</p>
+                        <hr>
+                        <h4 class="subtitle">Ingredients</h4>
+                        <h4 class="subtitle shopping-list-title is-hidden">Select Ingredients to Add to Shopping List:</h4>
+                        <ul class="recipe-ingredients">
+                            ${listIngredients(recipe.ingredients)}
+                        </ul>
+                        <button class="button add-to-shopping-list-btn is-primary is-light is-hidden">Add Selected Ingredients to Shopping List</button>
+                        <hr>
+                        <h4 class="subtitle">Instructions</h4>
+                        <ol class="recipe-instructions">
+                            ${listInstructions(recipe.instructions)}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        `;
+        let recipe_node = document.createElement('div');
+        recipe_node.innerHTML = recipe_html;
+        recipe_node.setAttribute("data-state", "edit");
+        docRecipesContainer.appendChild(recipe_node);
+        let shoppingListBtn = recipe_node.querySelector(".add-to-shopping-list-btn");
+        shoppingListBtn.addEventListener("click", e => {
+            let selectedIngredients = recipe_node.querySelectorAll('input[type="checkbox"]:checked');
+            for (let ing of selectedIngredients) {
+                console.log(ing.parentElement.querySelector(".name-field").innerText);
+            }
+        });
+        const btns = document.querySelectorAll(`[data-link="${recipe.url}"]`)
+        for (let btn of btns) {
+            btn.addEventListener("click", e => {
+                if (btn.classList.contains("is-warning"))
+                    return;
+
+                for (let b of btns) {
+                    if (b.classList.contains("is-warning")) {
+                        b.classList.remove("is-warning");
+                        b.classList.add("is-white");
+                        recipe_node.setAttribute("data-state", btn.innerText.toLowerCase());
+                        let shoppingListTitle = recipe_node.querySelector(".shopping-list-title")
+                        let shoppingListBtn = recipe_node.querySelector(".add-to-shopping-list-btn");
+                        if (btn.innerText.toLowerCase() === "shop") {
+                            shoppingListTitle.classList.remove("is-hidden");
+                            shoppingListBtn.classList.remove("is-hidden");
+                            docShoppingListCntr.classList.remove("is-hidden");
+                            let shopH3 = document.createElement("h3");
+                            shopH3.innerText = "Shopping List";
+                            shopH3.classList.add("subtitle");
+                            docShoppingListCntr.appendChild(shopH3);
+                            let shopUL = document.createElement("ul");
+                            docShoppingListCntr.appendChild(shopUL);
+                            // add checked ingredients
+                        } else {
+                            shoppingListTitle.classList.add("is-hidden");
+                            shoppingListBtn.classList.add("is-hidden"); 
+                            docShoppingListCntr.classList.add("is-hidden");
+                            docShoppingListCntr.innerHTML = "";
+                        }
+                    }
+                }
+
+                btn.classList.add("is-warning");
+            });
+        }
+        let checkboxes = recipe_node.querySelectorAll('input[type="checkbox"]');
+        for (let cb of checkboxes) {
+            cb.addEventListener("click", e => {
+                let state = recipe_node.getAttribute("data-state");
+                if (state === "edit")
+                    e.preventDefault();
+                if (state === "cook") {
+                    for (let c of checkboxes) {
+                        c.classList.add("is-cooking")
+                    }
+                }
+                if (state === "shop") {
+                    for (let c of checkboxes) {
+                        c.classList.remove("is-cooking")
+                    }
+                } 
+            });
+        }
+    }
 }
 
 const listIngredients = (ingredients) => {
@@ -131,9 +188,9 @@ const listIngredients = (ingredients) => {
             <li class="ingredient-container">
                 <label class="checkbox">
                     <input type="checkbox">
-                    <span>${ ingredient.amount }</span>
-                    <span>${ ingredient.unit }</span>
-                    <span>${ ingredient.name }</span>
+                    <span class="ingredient-field amount-field">${ ingredient.amount }</span>
+                    <span class="ingredient-field unit-field">${ ingredient.unit }</span>
+                    <span class="ingredient-field name-field">${ ingredient.name }</span>
                 </label>
             </li>
         `;
@@ -147,9 +204,9 @@ const listInstructions = (instructions) => {
         html += `
             <li class="instruction-container">
                 <label class="checkbox p-4">
-                    <input type="checkbox" class="instruction-text">
-                    <span>${ instruction.order }.</span>
-                    <span>${ instruction.instruction }</span>
+                    <input type="checkbox">
+                    <span class="instruction-field">${ instruction.order }.</span>
+                    <span class="instruction-field">${ instruction.instruction }</span>
                 </label>
             </li>
         `;
@@ -180,4 +237,21 @@ document.addEventListener('DOMContentLoaded', () => {
         $notification.classList.add("is-hidden");
       });
     });
+    
+    fetch(`${SERVER_ADDR_BASE}/get-recipes`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+        .then(async response => {
+            const data = await response.json();
+            console.log(data);
+            if (data.error) {
+                activateNotification(docReceipeNotif, data.error);
+                return;
+            }
+            loadRecipes(data.recipes);
+        })
+        .catch(error => console.log(error));
   });

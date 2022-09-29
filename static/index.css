@@ -4,6 +4,6 @@ li {
     list-style-type: none;
 }
 
-.instruction-text:checked ~ span {
+.is-cooking:checked ~ span {
     text-decoration: line-through;
 }

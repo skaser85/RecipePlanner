@@ -7,6 +7,8 @@ const docRecipesContainer = document.querySelector("#recipes-container");
 const docClearRecipesBtn = document.querySelector("#clear-recipes-btn");
 const docShoppingListCntr = document.querySelector("#shopping-list-container");
 
+const shoppingList = [];
+
 docSubmitRecipeURL.addEventListener("click", e => {
     submitURL();
 });
@@ -125,6 +127,7 @@ const loadRecipes = (recipes) => {
             }
         });
         const btns = document.querySelectorAll(`[data-link="${recipe.url}"]`)
+        const checkboxes = recipe_node.querySelectorAll('input[type="checkbox"]');
         for (let btn of btns) {
             btn.addEventListener("click", e => {
                 if (btn.classList.contains("is-warning"))
@@ -146,13 +149,26 @@ const loadRecipes = (recipes) => {
                             shopH3.classList.add("subtitle");
                             docShoppingListCntr.appendChild(shopH3);
                             let shopUL = document.createElement("ul");
+                            shopUL.id = "shopping-list-ul";
                             docShoppingListCntr.appendChild(shopUL);
-                            // add checked ingredients
+                            for (let c of checkboxes) {
+                                if (c.parentElement.querySelectorAll(".ingredient-field").length) {
+                                    c.classList.remove("is-cooking");
+                                    c.checked = shoppingList.indexOf(c.parentElement.querySelector(".name-field").innerText) > -1;
+                                }
+                            }
+                            loadShoppingList();
                         } else {
                             shoppingListTitle.classList.add("is-hidden");
                             shoppingListBtn.classList.add("is-hidden"); 
                             docShoppingListCntr.classList.add("is-hidden");
                             docShoppingListCntr.innerHTML = "";
+                            for (let c of checkboxes) {
+                                c.checked = false;
+                                if (btn.innerText.toLowerCase() === "cook") {
+                                    c.classList.add("is-cooking");
+                                }
+                            }
                         }
                     }
                 }
@@ -160,24 +176,42 @@ const loadRecipes = (recipes) => {
                 btn.classList.add("is-warning");
             });
         }
-        let checkboxes = recipe_node.querySelectorAll('input[type="checkbox"]');
         for (let cb of checkboxes) {
             cb.addEventListener("click", e => {
                 let state = recipe_node.getAttribute("data-state");
-                if (state === "edit")
+                if (state === "edit") {
                     e.preventDefault();
+                }
                 if (state === "cook") {
-                    for (let c of checkboxes) {
-                        c.classList.add("is-cooking")
-                    }
                 }
                 if (state === "shop") {
-                    for (let c of checkboxes) {
-                        c.classList.remove("is-cooking")
+                    if (cb.checked) {
+                        // add to Shopping List
+                        if (shoppingList.indexOf(cb.parentElement.querySelector(".name-field").innerText) < 0) {
+                            shoppingList.push(cb.parentElement.querySelector(".name-field").innerText);
+                            loadShoppingList();
+                        }
+                    } else {
+                        // remove from Shopping List
+                        let idx = shoppingList.indexOf(cb.parentElement.querySelector(".name-field").innerText);
+                        if (idx > -1) {
+                            shoppingList.splice(idx, 1);
+                            loadShoppingList();
+                        }
                     }
                 } 
             });
         }
+    }
+}
+
+const loadShoppingList = () => {
+    let docULShoppingList = document.querySelector("#shopping-list-ul");
+    docULShoppingList.innerHTML = "";
+    for (item of shoppingList) {
+        let li = document.createElement("li");
+        li.innerText = item;
+        docULShoppingList.appendChild(li);
     }
 }
 

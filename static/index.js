@@ -96,21 +96,29 @@ const loadRecipes = (recipes) => {
                 </div>
                 <div class="card-content">
                     <div class="content">
+                        <p><strong>URL</strong></p>
                         <a href="${ recipe.url }" target="_blank">${ recipe.url }</a>
-                        <p class="recipe-author mt-4"><strong>Author: </strong>${ recipe.author }</p>
+                        <p class="recipe-author mt-4">${recipe.author ? "<strong>Author: </strong>${ recipe.author}" : ""}</p>
+                        <p><strong>Description</strong></p>
                         <p class="recipe-description mb-2">${ recipe.description }</p>
                         <hr>
-                        <h4 class="subtitle">Ingredients</h4>
-                        <h4 class="subtitle shopping-list-title is-hidden">Select Ingredients to Add to Shopping List:</h4>
-                        <ul class="recipe-ingredients">
-                            ${listIngredients(recipe.ingredients)}
-                        </ul>
-                        <button class="button add-to-shopping-list-btn is-primary is-light is-hidden">Add Selected Ingredients to Shopping List</button>
-                        <hr>
-                        <h4 class="subtitle">Instructions</h4>
-                        <ol class="recipe-instructions">
-                            ${listInstructions(recipe.instructions)}
-                        </ol>
+                        <div class="container columns is-flex flex-direction-row">
+                            <!-- INGREDIENTS -->
+                            <div class="container column is-one-third ingredients-container">
+                                <h4 class="subtitle">Ingredients</h4>
+                                <h4 class="subtitle shopping-list-title is-hidden">Select Ingredients to Add to Shopping List:</h4>
+                                <ul class="recipe-ingredients">
+                                    ${listIngredients(recipe.ingredients)}
+                                </ul>
+                            </div>
+                            <!-- INSTRUCTIONS -->
+                            <div class="container column is-two-thirds">
+                                <h4 class="subtitle">Instructions</h4>
+                                <ol class="recipe-instructions">
+                                    ${listInstructions(recipe.instructions)}
+                                </ol>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,13 +127,6 @@ const loadRecipes = (recipes) => {
         recipe_node.innerHTML = recipe_html;
         recipe_node.setAttribute("data-state", "edit");
         docRecipesContainer.appendChild(recipe_node);
-        let shoppingListBtn = recipe_node.querySelector(".add-to-shopping-list-btn");
-        shoppingListBtn.addEventListener("click", e => {
-            let selectedIngredients = recipe_node.querySelectorAll('input[type="checkbox"]:checked');
-            for (let ing of selectedIngredients) {
-                console.log(ing.parentElement.querySelector(".name-field").innerText);
-            }
-        });
         const btns = document.querySelectorAll(`[data-link="${recipe.url}"]`)
         const checkboxes = recipe_node.querySelectorAll('input[type="checkbox"]');
         for (let btn of btns) {
@@ -139,10 +140,8 @@ const loadRecipes = (recipes) => {
                         b.classList.add("is-white");
                         recipe_node.setAttribute("data-state", btn.innerText.toLowerCase());
                         let shoppingListTitle = recipe_node.querySelector(".shopping-list-title")
-                        let shoppingListBtn = recipe_node.querySelector(".add-to-shopping-list-btn");
                         if (btn.innerText.toLowerCase() === "shop") {
                             shoppingListTitle.classList.remove("is-hidden");
-                            shoppingListBtn.classList.remove("is-hidden");
                             docShoppingListCntr.classList.remove("is-hidden");
                             let shopH3 = document.createElement("h3");
                             shopH3.innerText = "Shopping List";
@@ -160,7 +159,6 @@ const loadRecipes = (recipes) => {
                             loadShoppingList();
                         } else {
                             shoppingListTitle.classList.add("is-hidden");
-                            shoppingListBtn.classList.add("is-hidden"); 
                             docShoppingListCntr.classList.add("is-hidden");
                             docShoppingListCntr.innerHTML = "";
                             for (let c of checkboxes) {

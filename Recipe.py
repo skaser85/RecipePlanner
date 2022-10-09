@@ -48,9 +48,13 @@ class Recipe:
         error = ''
         success, instruction_span = self._parse_tag_(instruction, 'span')
         if not success:
-            error = f'Unable to parse HTML. Cannot find span for instruction: {instruction}'
-            return error, instruction_text
-        instruction_text = instruction_span[0].text
+            if len(instruction.text) == 0:
+                error = f'Unable to parse HTML. Cannot find span/div for instruction: {instruction}'
+                return error, instruction_text
+            else:
+                instruction_text = instruction.text
+        else:
+            instruction_text = instruction_span[0].text
         return error, instruction_text
 
     def parse_ingredient(self, ingredient: Tag) -> Tuple[str]:
@@ -60,9 +64,9 @@ class Recipe:
         error = ''
         success, amount_span = self._parse_tag_(ingredient, 'span', class_name='wprm-recipe-ingredient-amount')
         if not success:
-            error = f'Unable to parse HTML.  Cannot find amount span for ingredient: {ingredient}'
-            return error, amount, unit, name
-        amount = amount_span[0].text
+            amount = ''
+        else:
+            amount = amount_span[0].text
         success, unit_span = self._parse_tag_(ingredient, 'span', class_name='wprm-recipe-ingredient-unit')
         if not success:
             unit = ''

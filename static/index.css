@@ -7,3 +7,7 @@ li {
 .is-cooking:checked ~ span {
     text-decoration: line-through;
 }
+
+.ingredients-container {
+    border-right: 1px solid #f5f5f5;
+}

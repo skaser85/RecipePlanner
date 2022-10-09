@@ -181,6 +181,15 @@ const loadRecipes = (recipes) => {
                     e.preventDefault();
                 }
                 if (state === "cook") {
+                    if (cb.checked) {
+                        if (!cb.parentElement.parentElement.classList.contains("completed")) {
+                            cb.parentElement.parentElement.classList.add("completed");
+                        }
+                    } else {
+                        if (cb.parentElement.parentElement.classList.contains("completed")) {
+                            cb.parentElement.parentElement.classList.remove("completed");
+                        }
+                    }
                 }
                 if (state === "shop") {
                     if (cb.checked) {

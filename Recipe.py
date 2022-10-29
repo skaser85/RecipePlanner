@@ -1,6 +1,40 @@
+from __future__ import annotations
 from typing import List, Tuple
 from dataclasses import dataclass, field, asdict
 from bs4 import Tag
+from dbhandler import DBHandler
+
+DB_PATH = 'recipes.db'
+
+def get_recipes() -> List[Recipe]:
+    with DBHandler(DB_PATH) as db:
+        db_recipes = db.fetch_all('SELECT * FROM recipe')
+        recipes = []
+        for recipe in db_recipes:
+            r = Recipe(recipe[2], recipe[1], recipe[3])
+            db_ings = db.fetch_all('SELECT * FROM ingredient WHERE recipe_id=?', (recipe[0],))
+            ings = [Ingredient(i[1], i[3], i[2]) for i in db_ings]
+            db_insts = db.fetch_all('SELECT * FROM instruction WHERE recipe_id=?', (recipe[0],))
+            insts = [Instruction(i[1], i[2]) for i in db_insts]
+            r.ingredients = ings
+            r.instructions = insts
+            recipes.append(r)
+        return [r.to_dict() for r in recipes]
+
+def recipe_exists(url: str) -> bool:
+    with DBHandler(DB_PATH) as db:
+        recipe = db.fetch_one(f'SELECT * FROM recipe WHERE url=?', (url,))
+        print(recipe)
+        return False if recipe is None else True
+
+def add_recipe(recipe: Recipe):
+    with DBHandler(DB_PATH) as db:
+        c = db.insert(f'INSERT INTO recipe (id,name,url,description) VALUES (?,?,?,?)', (None, recipe.name, recipe.url, recipe.description))
+        r_id = c.lastrowid
+        for ing in recipe.ingredients:
+            db.insert(f'INSERT INTO ingredient (recipe_id, name, amount, unit) VALUES (?,?,?,?)', (r_id, ing.name, ing.amount, ing.unit))
+        for inst in recipe.instructions:
+            db.insert(f'INSERT INTO instruction (recipe_id, sequence, text) VALUES (?,?,?)', (r_id, inst.order, inst.instruction))
 
 @dataclass
 class Ingredient:
@@ -92,3 +126,6 @@ class Recipe:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+if __name__ == '__main__':
+    print(recipe_exists('yo'))

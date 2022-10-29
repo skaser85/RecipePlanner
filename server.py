@@ -1,25 +1,22 @@
 from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup
-from Recipe import Recipe
+from Recipe import Recipe, recipe_exists, get_recipes, add_recipe
 
 app = Flask(__name__)
-
-# TEMPORARY
-recipes: list[Recipe] = []
 
 @app.route("/")
 def index():
     return render_template('index.html')
 
 @app.route("/get-recipes", methods=['GET'])
-def get_recipes():
-    return {'error': '', 'recipes':  [r.to_dict() for r in recipes]}
+def get_all_recipes():
+    return {'error': '', 'recipes':  get_recipes()}
 
 @app.route("/clear-recipes", methods=["POST"])
 def clear_recipes():
     recipes.clear()
-    return {'error': '', 'recipes': recipes}
+    return {'error': '', 'recipes': get_recipes()}
 
 @app.route("/recipe-url", methods=["POST"])
 def recipe_url():
@@ -31,9 +28,8 @@ def recipe_url():
     # pull out the url
     url = data['url']
     # check if the url already exists
-    exists = len([r for r in recipes if r.url == url]) > 0
-    if exists:
-        return {'error': 'Recipe already exists!', 'recipes': recipes}
+    if recipe_exists(url):
+        return {'error': 'Recipe already exists!', 'recipes': get_recipes()}
     # check to see if we can get the html from the url
     page = requests.get(url)
     if page.status_code != 200:
@@ -60,12 +56,15 @@ def recipe_url():
     for ingredient in ingredients:
         success, error = recipe.add_ingredient(ingredient)
         if not success:
-            return {'error': error, 'recipes':  [r.to_dict() for r in recipes]}
+            return {'error': error, 'recipes':  get_recipes()}
     # get recipe instructions
     instructions = soup.find_all('div', class_='wprm-recipe-instruction-text')
     for instruction in instructions:
         success, error = recipe.add_instruction(instruction)
         if not success:
-            return {'error': error, 'recipes':  [r.to_dict() for r in recipes]}
-    recipes.append(recipe)
-    return {'error': error, 'recipes':  [r.to_dict() for r in recipes]}
+            return {'error': error, 'recipes':  get_recipes()}
+    add_recipe(recipe)
+    return {'error': error, 'recipes':  get_recipes()}
+
+if __name__ == '__main__':
+     app.run(host='0.0.0.0', port=8008, debug=False)

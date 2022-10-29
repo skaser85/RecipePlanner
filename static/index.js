@@ -1,4 +1,4 @@
-const SERVER_ADDR_BASE = "http://127.0.0.1:5000/";
+const SERVER_ADDR_BASE = `http://${window.location.hostname}:${window.location.port}`;
 
 const docRecipeURL = document.querySelector("#recipe-url");
 const docSubmitRecipeURL = document.querySelector("#submit-recipe-url");
@@ -102,7 +102,7 @@ const loadRecipes = (recipes) => {
                         <p><strong>Description</strong></p>
                         <p class="recipe-description mb-2">${ recipe.description }</p>
                         <hr>
-                        <div class="container columns is-flex flex-direction-row">
+                        <div class="container columns is-flex flex-direction-row ingredients-instructions">
                             <!-- INGREDIENTS -->
                             <div class="container column is-one-third ingredients-container">
                                 <h4 class="subtitle">Ingredients</h4>
@@ -112,7 +112,7 @@ const loadRecipes = (recipes) => {
                                 </ul>
                             </div>
                             <!-- INSTRUCTIONS -->
-                            <div class="container column is-two-thirds">
+                            <div class="container column is-two-thirds instructions-container">
                                 <h4 class="subtitle">Instructions</h4>
                                 <ol class="recipe-instructions">
                                     ${listInstructions(recipe.instructions)}
@@ -165,6 +165,18 @@ const loadRecipes = (recipes) => {
                                 c.checked = false;
                                 if (btn.innerText.toLowerCase() === "cook") {
                                     c.classList.add("is-cooking");
+                                }
+                            }
+                            if (btn.innerText.toLowerCase() === "cook") {
+                                let instructions = btn.parentElement.parentElement.parentElement
+                                                    .querySelector(".card-content")
+                                                    .querySelector(".content")
+                                                    .querySelector(".ingredients-instructions")
+                                                    .querySelector(".instructions-container")
+                                                    .querySelector(".recipe-instructions")
+                                                    .querySelectorAll(".instruction-container");
+                                for (let instruction of instructions) {
+                                    instruction.classList.add("is-cooking");
                                 }
                             }
                         }

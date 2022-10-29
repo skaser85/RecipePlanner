@@ -1,1 +1,1 @@
-.venv\Scripts\activate && flask --app server --debug run
+start http://127.0.0.1:8008 && .venv\Scripts\activate && python server.py

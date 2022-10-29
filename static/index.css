@@ -12,7 +12,7 @@ li {
     border-right: 1px solid #f5f5f5;
 }
 
-.instruction-container {
+.instruction-container.is-cooking {
     background-color: cornsilk;
 }
 
